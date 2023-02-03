@@ -31,12 +31,70 @@ enum Category {
 }
 
 public class VendingMachine {
+    private static State state = State.RESTING;
+    private static int amount = 0;
+    private static Input selection = null;
 
     enum StateDuration { TRANSIENT } // Tagging enum
     enum State {
+        RESTING {
+            @Override
+            void next(Input input) {
+                switch (Category.categorize(input)) {
+                    case MONEY:
+                        amount += input.amount();
+                        state = ADDING_MONEY;
+                        break;
+                    case SHUT_DOWN:
+                        state = TERMINAL;
+                    default:
+                }
+            }
+        },
+        ADDING_MONEY {
+            @Override
+            void next(Input input) {
+                switch (Category.categorize(input)) {
+                    case MONEY:
+                        amount += input.amount();
+                        break;
+                    case ITEM_SELECTION:
+                        selection = input;
+                        if(amount < selection.amount())
+                            System.out.println("Insufficient money for " + selection);
+                        else state = DISPENSING;
+                        break;
+                    case QUIT_TRANSACTION:
+                        state = GIVING_CHANGE;
+                        break;
+                    default:
+                }
+            }
+        },
+        DISPENSING{},
+        GIVING_CHANGE{},
+        TERMINAL{};
         private boolean isTransient = false;
         State() {}
         State(StateDuration trans) {isTransient = true;}
 
+        void next(Input input) {
+            throw new RuntimeException("Only call next(Input input) for non-transient states");
+        }
+        void next() {
+            throw new RuntimeException("Only call next() for StateDuration.TRANSIENT states");
+        }
+
+        void output() {
+            System.out.println(amount);
+        }
+    }
+
+    static void run(Supplier<Input> gen) {
+        while (state != State.TERMINAL) {
+            state.next(gen.get());
+            while (state.isTransient)
+                state.next();
+        }
     }
 }
