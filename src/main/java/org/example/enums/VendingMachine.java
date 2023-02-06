@@ -71,9 +71,30 @@ public class VendingMachine {
                 }
             }
         },
-        DISPENSING{},
-        GIVING_CHANGE{},
-        TERMINAL{};
+        DISPENSING{
+            @Override
+            void next() {
+                System.out.println("here is your " + selection);
+                amount -= selection.amount();
+                state = GIVING_CHANGE;
+            }
+        },
+        GIVING_CHANGE{
+            @Override
+            void next() {
+                if(amount > 0) {
+                    System.out.println("Your change: " + amount);
+                    amount = 0;
+                }
+                state = RESTING;
+            }
+        },
+        TERMINAL{
+            @Override
+            void output() {
+                System.out.println("Halted");
+            }
+        };
         private boolean isTransient = false;
         State() {}
         State(StateDuration trans) {isTransient = true;}
@@ -95,6 +116,48 @@ public class VendingMachine {
             state.next(gen.get());
             while (state.isTransient)
                 state.next();
+            state.output();
         }
+    }
+
+    public static void main(String[] args) {
+        Supplier<Input> gen = new RandomInputSupplier();
+        if(args.length == 1)
+            gen = new FileInputSupplier(args[0]);
+        run(gen);
+    }
+
+
+}
+
+// For a basic sanity check
+class RandomInputSupplier implements Supplier<Input> {
+    @Override
+    public Input get() {
+        return Input.randomSelection();
+    }
+}
+
+// Create Inputs from a file of ';' - separated Strings:
+class FileInputSupplier implements Supplier<Input> {
+    private Iterator<String> input;
+    FileInputSupplier(String fileName) {
+        try {
+            input = Files.lines(Paths.get(fileName))
+                    .skip(1)
+                    .flatMap(s -> Arrays.stream(s.split(";")))
+                    .map(String::trim)
+                    .collect(Collectors.toList())
+                    .iterator();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Input get() {
+        if(!input.hasNext())
+            return null;
+        return Enum.valueOf(Input.class, input.next().trim());
     }
 }
