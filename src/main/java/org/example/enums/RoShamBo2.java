@@ -1,7 +1,6 @@
 package org.example.enums;
 
-import static org.example.enums.Outcome.DRAW;
-import static org.example.enums.Outcome.WIN;
+import static org.example.enums.Outcome.*;
 
 public enum RoShamBo2 implements Competitor<RoShamBo2> {
     PAPER(DRAW, LOSE, WIN),
@@ -27,6 +26,6 @@ public enum RoShamBo2 implements Competitor<RoShamBo2> {
     }
 
     public static void main(String[] args) {
-
+        RoShamBo.play(RoShamBo2.class, 20);
     }
 }
