@@ -12,13 +12,13 @@ public enum RoShamBo5 implements Competitor<RoShamBo5> {
     static EnumMap<RoShamBo5, EnumMap<RoShamBo5, Outcome>> table = new EnumMap<>(RoShamBo5.class);
 
     static {
-        for (RoShamBo5 it : RoShamBo5.values()) {
+        for (RoShamBo5 it : RoShamBo5.values())
             table.put(it, new EnumMap<>(RoShamBo5.class));
 
-            initRow(PAPER, DRAW, LOSE, WIN);
-            initRow(SCISSORS, WIN, DRAW, LOSE);
-            initRow(ROCK, LOSE, WIN, DRAW);
-        }
+        initRow(PAPER, DRAW, LOSE, WIN);
+        initRow(SCISSORS, WIN, DRAW, LOSE);
+        initRow(ROCK, LOSE, WIN, DRAW);
+
     }
 
     static void initRow(RoShamBo5 it, Outcome vPAPAER, Outcome vSCISSORS, Outcome vROCK) {
@@ -26,5 +26,14 @@ public enum RoShamBo5 implements Competitor<RoShamBo5> {
         row.put(RoShamBo5.PAPER, vPAPAER);
         row.put(RoShamBo5.SCISSORS, vSCISSORS);
         row.put(RoShamBo5.ROCK, vROCK);
+    }
+
+    @Override
+    public Outcome compete(RoShamBo5 it) {
+        return table.get(this).get(it);
+    }
+
+    public static void main(String[] args) {
+        RoShamBo.play(RoShamBo5.class, 20);
     }
 }
